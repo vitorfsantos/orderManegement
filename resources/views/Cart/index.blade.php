@@ -12,6 +12,25 @@
                 </a>
             </div>
 
+            <!-- Mensagens de Sessão -->
+            @if(session('success'))
+                <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        {{ session('success') }}
+                    </div>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        {{ session('error') }}
+                    </div>
+                </div>
+            @endif
+
             @if(session('carrinho') && count(session('carrinho')) > 0)
                 <div class="space-y-4">
                     @foreach($carrinho as $item)
@@ -69,10 +88,13 @@
                             <i class="fas fa-arrow-left mr-2"></i>
                             Continuar Comprando
                         </a>
-                        <button class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200">
-                            <i class="fas fa-credit-card mr-2"></i>
-                            Finalizar Pedido
-                        </button>
+                        <form method="POST" action="{{ route('orders.finish') }}" class="flex-1" id="finish-order-form">
+                            @csrf
+                            <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200">
+                                <i class="fas fa-credit-card mr-2"></i>
+                                Finalizar Pedido
+                            </button>
+                        </form>
                     </div>
                 </div>
             @else
