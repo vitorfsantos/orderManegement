@@ -10,34 +10,42 @@ use Livewire\Component;
 
 class Password extends Component
 {
-    public string $current_password = '';
+  public string $current_password = '';
 
-    public string $password = '';
+  public string $password = '';
 
-    public string $password_confirmation = '';
+  public string $password_confirmation = '';
 
-    /**
-     * Update the password for the currently authenticated user.
-     */
-    public function updatePassword(): void
-    {
-        try {
-            $validated = $this->validate([
-                'current_password' => ['required', 'string', 'current_password'],
-                'password' => ['required', 'string', PasswordRule::defaults(), 'confirmed'],
-            ]);
-        } catch (ValidationException $e) {
-            $this->reset('current_password', 'password', 'password_confirmation');
+  /**
+   * Get the view / contents that represent the component.
+   */
+  public function render()
+  {
+    return view('livewire.settings.password')->layout('components.layouts.app');
+  }
 
-            throw $e;
-        }
+  /**
+   * Update the password for the currently authenticated user.
+   */
+  public function updatePassword(): void
+  {
+    try {
+      $validated = $this->validate([
+        'current_password' => ['required', 'string', 'current_password'],
+        'password' => ['required', 'string', PasswordRule::defaults(), 'confirmed'],
+      ]);
+    } catch (ValidationException $e) {
+      $this->reset('current_password', 'password', 'password_confirmation');
 
-        Auth::user()->update([
-            'password' => Hash::make($validated['password']),
-        ]);
-
-        $this->reset('current_password', 'password', 'password_confirmation');
-
-        $this->dispatch('password-updated');
+      throw $e;
     }
+
+    Auth::user()->update([
+      'password' => Hash::make($validated['password']),
+    ]);
+
+    $this->reset('current_password', 'password', 'password_confirmation');
+
+    $this->dispatch('password-updated');
+  }
 }

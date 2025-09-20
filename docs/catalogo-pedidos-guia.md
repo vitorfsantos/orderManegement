@@ -21,7 +21,7 @@
 composer require laravel/breeze --dev
 php artisan breeze:install vue --ssr
 npm install && npm run build
-php artisan migrate
+php artisan migrate:fresh
 ```
 
 ### 2. Configurar Inertia.js para SPA Modular
@@ -39,18 +39,21 @@ composer require ramsey/uuid
 ```
 
 ### 4. Configurar Perfis de Usuário
-Adicionar campo `role` na migration de usuários:
-
-```bash
-php artisan make:migration add_role_to_users_table
-```
+Como as migrations serão rodadas com `fresh`, podemos alterar diretamente a migration original da tabela users. Isso evita a necessidade de criar migrations adicionais:
 
 ```php
-// database/migrations/xxxx_add_role_to_users_table.php
+// database/migrations/0001_01_01_000000_create_users_table.php
 public function up()
 {
-    Schema::table('users', function (Blueprint $table) {
+    Schema::create('users', function (Blueprint $table) {
+        $table->uuid('id')->primary();
+        $table->string('name');
+        $table->string('email')->unique();
+        $table->timestamp('email_verified_at')->nullable();
+        $table->string('password');
         $table->enum('role', ['admin', 'customer'])->default('customer');
+        $table->rememberToken();
+        $table->timestamps();
         $table->softDeletes();
     });
 }
@@ -369,7 +372,178 @@ class AdminMiddleware
 }
 ```
 
-### 3. Módulo Users - Controllers Granulares
+### 3. Módulo Auth - Exemplo de Arquitetura Granular
+
+**ANTES (Controller monolítico):**
+```php
+// app/Modules/Auth/Controllers/LoginController.php
+class LoginController extends Controller
+{
+    public function show(): View
+    {
+        return view('Auth.login');
+    }
+
+    public function login(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            return redirect()->intended(route('products.index'));
+        }
+
+        return back()->withErrors([
+            'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
+        ])->onlyInput('email');
+    }
+
+    public function logout(Request $request): RedirectResponse
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
+    }
+}
+```
+
+**DEPOIS (Arquitetura Granular):**
+
+#### Controllers Granulares (Apenas direcionamento)
+```php
+// app/Modules/Auth/Controllers/ShowLoginController.php
+class ShowLoginController extends Controller
+{
+    public function __construct(
+        private ShowLoginService $showLoginService
+    ) {}
+
+    public function show(): View
+    {
+        return $this->showLoginService->execute();
+    }
+}
+
+// app/Modules/Auth/Controllers/ProcessLoginController.php
+class ProcessLoginController extends Controller
+{
+    public function __construct(
+        private ProcessLoginService $processLoginService
+    ) {}
+
+    public function login(LoginRequest $request): RedirectResponse
+    {
+        return $this->processLoginService->execute($request->validated());
+    }
+}
+
+// app/Modules/Auth/Controllers/ProcessLogoutController.php
+class ProcessLogoutController extends Controller
+{
+    public function __construct(
+        private ProcessLogoutService $processLogoutService
+    ) {}
+
+    public function logout(Request $request): RedirectResponse
+    {
+        return $this->processLogoutService->execute($request);
+    }
+}
+```
+
+#### Services Granulares (Lógica de negócio)
+```php
+// app/Modules/Auth/Services/ShowLoginService.php
+class ShowLoginService
+{
+    public function execute(): View
+    {
+        return view('Auth.login');
+    }
+}
+
+// app/Modules/Auth/Services/ProcessLoginService.php
+class ProcessLoginService
+{
+    public function execute(array $credentials): RedirectResponse
+    {
+        $email = $credentials['email'];
+        $password = $credentials['password'];
+        $remember = $credentials['remember'] ?? false;
+
+        if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
+            request()->session()->regenerate();
+            return redirect()->intended(route('products.index'));
+        }
+
+        return back()->withErrors([
+            'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
+        ])->onlyInput('email');
+    }
+}
+
+// app/Modules/Auth/Services/ProcessLogoutService.php
+class ProcessLogoutService
+{
+    public function execute(Request $request): RedirectResponse
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
+    }
+}
+```
+
+#### Request de Validação
+```php
+// app/Modules/Auth/Requests/LoginRequest.php
+class LoginRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'email' => 'required|email',
+            'password' => 'required|string',
+            'remember' => 'boolean',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'O campo email é obrigatório.',
+            'email.email' => 'O email deve ser um endereço de email válido.',
+            'password.required' => 'O campo senha é obrigatório.',
+        ];
+    }
+}
+```
+
+#### Rotas Atualizadas
+```php
+// app/Modules/Auth/routes.php
+use App\Modules\Auth\Controllers\{
+    ShowLoginController,
+    ProcessLoginController,
+    ProcessLogoutController
+};
+
+Route::get('/login', [ShowLoginController::class, 'show'])->name('login');
+Route::post('/login', [ProcessLoginController::class, 'login']);
+Route::post('/logout', [ProcessLogoutController::class, 'logout'])->name('logout');
+```
+
+### 4. Módulo Users - Controllers Granulares
 ```bash
 # Criar controllers específicos para cada funcionalidade
 php artisan make:controller CreateUserController
@@ -2285,7 +2459,7 @@ class ProdutosListagemTest extends TestCase
 
 // Executar migrations para tabelas de queue
 php artisan queue:table
-php artisan migrate
+php artisan migrate:fresh
 
 // Executar worker
 php artisan queue:work
@@ -2334,7 +2508,8 @@ npm install
 # Configurar banco
 cp .env.example .env
 php artisan key:generate
-php artisan migrate
+# Usar migrate:fresh para recriar todas as tabelas (incluindo users com UUID e role)
+php artisan migrate:fresh
 
 # Executar em desenvolvimento
 npm run dev
@@ -2531,11 +2706,73 @@ resources/
 - Configuração centralizada de módulos
 - Fácil adição de novos módulos
 
-### 6. **Princípio de Responsabilidade Única**
-- Cada controller tem apenas uma responsabilidade
-- Cada service executa apenas uma operação específica
-- Facilita manutenção, testes e reutilização
-- Código mais limpo e organizado
+### 6. **Princípio de Responsabilidade Única e Separação de Funções**
+
+#### **Controllers (Apenas Direcionamento)**
+- **Responsabilidade única**: Apenas receber requisições e direcionar para services
+- **Não contém lógica de negócio**: Toda lógica fica nos services
+- **Validação via Requests**: Usa Form Requests para validação de dados
+- **Injeção de dependência**: Recebe services via constructor
+- **Exemplo**:
+```php
+class ProcessLoginController extends Controller
+{
+    public function __construct(
+        private ProcessLoginService $processLoginService
+    ) {}
+
+    public function login(LoginRequest $request): RedirectResponse
+    {
+        return $this->processLoginService->execute($request->validated());
+    }
+}
+```
+
+#### **Services (Lógica de Negócio)**
+- **Responsabilidade única**: Executar uma operação específica
+- **Contém toda lógica**: Autenticação, validações complexas, regras de negócio
+- **Reutilizável**: Pode ser usado por diferentes controllers ou jobs
+- **Testável**: Fácil de testar isoladamente
+- **Exemplo**:
+```php
+class ProcessLoginService
+{
+    public function execute(array $credentials): RedirectResponse
+    {
+        // Toda lógica de autenticação aqui
+        if (Auth::attempt($credentials)) {
+            // Lógica de sucesso
+        }
+        // Lógica de erro
+    }
+}
+```
+
+#### **Requests (Validação de Dados)**
+- **Responsabilidade única**: Validar dados de entrada
+- **Regras centralizadas**: Todas as regras de validação em um local
+- **Mensagens customizadas**: Mensagens de erro específicas
+- **Autorização**: Verificar se usuário pode executar ação
+- **Exemplo**:
+```php
+class LoginRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ];
+    }
+}
+```
+
+#### **Benefícios da Separação**
+- **Manutenibilidade**: Código mais fácil de manter e modificar
+- **Testabilidade**: Cada camada pode ser testada independentemente
+- **Reutilização**: Services podem ser reutilizados em diferentes contextos
+- **Clareza**: Responsabilidades bem definidas e claras
+- **Escalabilidade**: Fácil adicionar novas funcionalidades
 
 ### 7. **SPA Modular com Vue.js + Inertia.js**
 - **Frontend SPA**: Single Page Application com Vue.js
@@ -2569,28 +2806,41 @@ mkdir -p resources/js/Components/{Users,Products,Orders,Cart}
 mkdir -p resources/js/Layouts
 mkdir -p resources/js/Shared
 
-# 5. Criar controllers granulares para Users
+# 5. Criar controllers granulares para Auth
+php artisan make:controller ShowLoginController
+php artisan make:controller ProcessLoginController
+php artisan make:controller ProcessLogoutController
+
+# 6. Criar services granulares para Auth
+php artisan make:service ShowLoginService
+php artisan make:service ProcessLoginService
+php artisan make:service ProcessLogoutService
+
+# 7. Criar requests para Auth
+php artisan make:request LoginRequest
+
+# 8. Criar controllers granulares para Users
 php artisan make:controller CreateUserController
 php artisan make:controller UpdateUserController
 php artisan make:controller DeleteUserController
 php artisan make:controller ShowUserController
 php artisan make:controller ListUsersController
 
-# 4. Criar services granulares para Users
+# 9. Criar services granulares para Users
 php artisan make:service CreateUserService
 php artisan make:service UpdateUserService
 php artisan make:service DeleteUserService
 php artisan make:service ShowUserService
 php artisan make:service ListUsersService
 
-# 5. Criar controllers granulares para Products
+# 10. Criar controllers granulares para Products
 php artisan make:controller CreateProductController
 php artisan make:controller UpdateProductController
 php artisan make:controller DeleteProductController
 php artisan make:controller ShowProductController
 php artisan make:controller ListProductsController
 
-# 6. Criar services granulares para Products
+# 11. Criar services granulares para Products
 php artisan make:service CreateProductService
 php artisan make:service UpdateProductService
 php artisan make:service DeleteProductService
@@ -2598,47 +2848,47 @@ php artisan make:service ShowProductService
 php artisan make:service ListProductsService
 php artisan make:service StockService
 
-# 7. Criar controllers granulares para Orders
+# 12. Criar controllers granulares para Orders
 php artisan make:controller CreateOrderController
 php artisan make:controller UpdateOrderStatusController
 php artisan make:controller ShowOrderController
 php artisan make:controller ListOrdersController
 php artisan make:controller ListAdminOrdersController
 
-# 8. Criar services granulares para Orders
+# 13. Criar services granulares para Orders
 php artisan make:service CreateOrderService
 php artisan make:service UpdateOrderStatusService
 php artisan make:service ShowOrderService
 php artisan make:service ListOrdersService
 
-# 9. Criar controllers granulares para Cart
+# 14. Criar controllers granulares para Cart
 php artisan make:controller AddToCartController
 php artisan make:controller RemoveFromCartController
 php artisan make:controller UpdateCartController
 php artisan make:controller ShowCartController
 php artisan make:controller ClearCartController
 
-# 10. Criar services granulares para Cart
+# 15. Criar services granulares para Cart
 php artisan make:service AddToCartService
 php artisan make:service RemoveFromCartService
 php artisan make:service UpdateCartService
 php artisan make:service ShowCartService
 php artisan make:service ClearCartService
 
-# 11. Executar migrations
-php artisan migrate
+# 16. Executar migrations (fresh para recriar tabelas com UUID e role)
+php artisan migrate:fresh
 
-# 12. Configurar Vite e Inertia.js
+# 17. Configurar Vite e Inertia.js
 # - Configurar vite.config.js com aliases
 # - Configurar app.js com Inertia
 # - Criar layouts e componentes base
 
-# 13. Registrar observers no AppServiceProvider
-# 14. Configurar cache e queues
-# 15. Executar build do frontend
+# 18. Registrar observers no AppServiceProvider
+# 19. Configurar cache e queues
+# 20. Executar build do frontend
 npm run build
 
-# 16. Executar testes
+# 21. Executar testes
 php artisan test
 ```
 
