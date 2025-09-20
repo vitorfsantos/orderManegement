@@ -125,15 +125,15 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('add-to-cart')?.addEventListener('click', function() {
-            const productId = this.dataset.productId;
-            const quantity = document.getElementById('quantity').value;
-            
-            // For now, just show an alert
-            alert(`Adicionado ${quantity} unidades deste produto ao carrinho!`);
-            
-            // TODO: Implement actual cart functionality
-        });
-    </script>
+    @auth
+        <script>
+            document.getElementById('add-to-cart')?.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const quantity = document.getElementById('quantity').value;
+                
+                addToCart(productId, quantity);
+            });
+        </script>
+        <script src="{{ asset('js/cart.js') }}"></script>
+    @endauth
 </x-layouts.app>

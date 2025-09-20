@@ -73,6 +73,16 @@
                                     Ver Detalhes
                                 </a>
                                 @auth
+                                    @if($product->active && $product->stock > 0)
+                                        <button onclick="addToCart('{{ $product->id }}')" class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200" title="Adicionar ao carrinho">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    @else
+                                        <button disabled class="bg-gray-300 text-gray-500 px-3 py-2 rounded-lg cursor-not-allowed" title="Produto indisponível">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    @endif
+                                    
                                     @if(auth()->user()->isAdmin())
                                         <button onclick="editProduct('{{ $product->id }}')" class="bg-gray-100 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors duration-200" title="Editar">
                                             <i class="fas fa-edit"></i>
@@ -124,5 +134,10 @@
             <!-- JavaScript -->
             <script src="{{ asset('js/products.js') }}"></script>
         @endif
+    @endauth
+
+    <!-- Cart JavaScript for all authenticated users -->
+    @auth
+        <script src="{{ asset('js/cart.js') }}"></script>
     @endauth
 </x-layouts.app>
