@@ -581,69 +581,6 @@ public function test_customer_can_create_order()
 }
 ```
 
-## 🚀 Deploy
-
-### Produção
-
-1. **Configurar ambiente**
-```bash
-APP_ENV=production
-APP_DEBUG=false
-DB_CONNECTION=mysql
-# ... outras configurações
-```
-
-2. **Otimizar aplicação**
-```bash
-composer install --optimize-autoloader --no-dev
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-npm run build
-```
-
-3. **Configurar servidor web**
-- Apache/Nginx
-- SSL/HTTPS
-- Configuração de domínio
-
-### Docker (Opcional)
-
-```dockerfile
-FROM php:8.2-fpm
-# ... configuração do container
-```
-
-## 🤝 Contribuição
-
-### Como Contribuir
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-### Padrões de Código
-
-- Seguir PSR-12
-- Usar Laravel Pint para formatação
-- Escrever testes para novas funcionalidades
-- Documentar mudanças importantes
-- Manter compatibilidade com versões suportadas
-
-### Issues
-
-- Use templates fornecidos
-- Seja específico e claro
-- Inclua passos para reproduzir
-- Adicione screenshots quando relevante
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-## 📞 Suporte
 
 Para suporte e dúvidas:
 
