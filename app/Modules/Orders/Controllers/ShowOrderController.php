@@ -3,18 +3,19 @@
 namespace App\Modules\Orders\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Orders\Models\Order;
+use App\Modules\Orders\Services\ShowOrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ShowOrderController extends Controller
 {
+  public function __construct(
+    private ShowOrderService $showOrderService
+  ) {}
+
   public function __invoke(Request $request, $id): View
   {
-    $order = Order::with(['orderItems.product', 'user'])
-      ->where('user_id', Auth::id())
-      ->findOrFail($id);
+    $order = $this->showOrderService->execute($id);
 
     return view('Orders.show', compact('order'));
   }

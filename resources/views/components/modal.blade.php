@@ -10,55 +10,52 @@ $sizeClasses = [
 ];
 @endphp
 
-<!-- Modal Backdrop -->
-<div id="{{ $id }}-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden" onclick="closeModal('{{ $id }}')">
-    <!-- Modal Container -->
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full {{ $sizeClasses[$size] }} max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
-            <!-- Modal Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-semibold text-gray-900">{{ $title }}</h3>
-                <button type="button" onclick="closeModal('{{ $id }}')" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            
-            <!-- Modal Body -->
-            <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-                {{ $slot }}
-            </div>
-            
-            <!-- Modal Footer (if provided) -->
-            @if(isset($footer))
-            <div class="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
-                {{ $footer }}
-            </div>
-            @endif
+<!-- Modal -->
+<div id="{{ $id }}" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 {{ $sizeClasses[$size] }} shadow-lg rounded-md bg-white">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">{{ $title }}</h3>
+            <button onclick="closeModal('{{ $id }}')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Modal Body -->
+        <div class="mt-4">
+            {{ $slot }}
         </div>
     </div>
 </div>
 
 <script>
 function openModal(modalId) {
-    const modal = document.getElementById(modalId + '-backdrop');
-    modal.classList.remove('hidden');
+    document.getElementById(modalId).classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
 
 function closeModal(modalId) {
-    const modal = document.getElementById(modalId + '-backdrop');
-    modal.classList.add('hidden');
+    document.getElementById(modalId).classList.add('hidden');
     document.body.style.overflow = 'auto';
 }
 
-// Close modal with Escape key
+// Fechar modal ao clicar fora dele
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('bg-opacity-50')) {
+        const modal = event.target;
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+});
+
+// Fechar modal com ESC
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
-        const openModal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50:not(.hidden)');
-        if (openModal) {
-            const modalId = openModal.id.replace('-backdrop', '');
-            closeModal(modalId);
-        }
+        const openModals = document.querySelectorAll('.fixed.inset-0:not(.hidden)');
+        openModals.forEach(modal => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        });
     }
 });
 </script>

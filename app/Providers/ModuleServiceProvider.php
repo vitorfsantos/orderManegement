@@ -12,7 +12,8 @@ class ModuleServiceProvider extends ServiceProvider
     'Users',
     'Products',
     'Orders',
-    'Cart'
+    'Cart',
+    'Dashboard'
   ];
 
   /**

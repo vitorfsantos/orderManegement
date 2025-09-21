@@ -28,10 +28,14 @@
                     <h3 class="font-semibold text-gray-900 mb-2">Status</h3>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                         @if($order->status === 'pending') bg-yellow-100 text-yellow-800
-                        @elseif($order->status === 'completed') bg-green-100 text-green-800
+                        @elseif($order->status === 'paid') bg-green-100 text-green-800
                         @elseif($order->status === 'cancelled') bg-red-100 text-red-800
                         @else bg-gray-100 text-gray-800 @endif">
-                        {{ ucfirst($order->status) }}
+                        @if($order->status === 'pending') Pendente
+                        @elseif($order->status === 'paid') Pago
+                        @elseif($order->status === 'cancelled') Cancelado
+                        @else {{ ucfirst($order->status) }}
+                        @endif
                     </span>
                 </div>
                 <div class="bg-gray-50 rounded-lg p-4">
@@ -90,3 +94,4 @@
         </div>
     </div>
 </x-layouts.app>
+

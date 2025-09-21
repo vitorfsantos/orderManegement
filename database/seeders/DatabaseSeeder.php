@@ -18,5 +18,8 @@ class DatabaseSeeder extends Seeder
 
     // Seed products
     $this->call(\App\Modules\Products\Seeders\ProductSeeder::class);
+
+    // Seed orders
+    $this->call(\App\Modules\Orders\Seeders\OrderSeeder::class);
   }
 }

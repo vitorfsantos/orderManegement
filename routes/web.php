@@ -7,14 +7,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
   if (auth()->check()) {
-    return redirect()->route('products.index');
+    return redirect()->route('dashboard');
   }
   return redirect()->route('login');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
-  ->middleware(['auth', 'verified'])
-  ->name('dashboard');
+// Dashboard route is now handled by the Dashboard module
 
 Route::middleware(['auth'])->group(function () {
   Route::redirect('settings', 'settings/profile');
