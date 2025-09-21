@@ -161,26 +161,16 @@
                                 @auth
                                     @if(auth()->user()->isAdmin() && $order->status === 'pending')
                                         <div class="flex gap-2">
-                                            <form method="POST" action="{{ route('orders.update-status', $order->id) }}" class="inline">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="status" value="paid">
-                                                <button type="submit" 
-                                                        class="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700 transition-colors"
-                                                        onclick="return confirm('Marcar pedido como Pago?')">
-                                                    <i class="fas fa-check mr-1"></i>Marcar como Pago
-                                                </button>
-                                            </form>
-                                            <form method="POST" action="{{ route('orders.update-status', $order->id) }}" class="inline">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="status" value="cancelled">
-                                                <button type="submit" 
-                                                        class="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700 transition-colors"
-                                                        onclick="return confirm('Cancelar pedido?')">
-                                                    <i class="fas fa-times mr-1"></i>Cancelar
-                                                </button>
-                                            </form>
+                                            <button type="button" 
+                                                    class="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700 transition-colors"
+                                                    onclick="showPaymentModal('{{ $order->id }}', '{{ number_format($order->total, 2, ',', '.') }}', '{{ $order->user->name }}')">
+                                                <i class="fas fa-check mr-1"></i>Marcar como Pago
+                                            </button>
+                                            <button type="button" 
+                                                    class="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700 transition-colors"
+                                                    onclick="showCancelModal('{{ $order->id }}', '{{ number_format($order->total, 2, ',', '.') }}', '{{ $order->user->name }}')">
+                                                <i class="fas fa-times mr-1"></i>Cancelar
+                                            </button>
                                         </div>
                                     @endif
                                 @endauth
@@ -211,5 +201,11 @@
     
     <!-- Order Details Modal -->
     <x-order-details-modal />
+    
+    <!-- Payment Confirmation Modal -->
+    <x-payment-confirmation-modal />
+    
+    <!-- Cancel Order Modal -->
+    <x-cancel-order-modal />
 </x-layouts.app>
 

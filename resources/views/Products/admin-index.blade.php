@@ -86,9 +86,9 @@
                                 <td class="py-4 px-4 text-gray-600">{{ $product->created_at->format('d/m/Y') }}</td>
                                 <td class="py-4 px-4">
                                     <div class="flex items-center justify-center space-x-2">
-                                        <button onclick="showProduct('{{ $product->id }}')" class="text-blue-600 hover:text-blue-800" title="Ver detalhes">
+                                        <a href="{{ route('products.show', $product->slug) }}" class="text-blue-600 hover:text-blue-800" title="Ver detalhes">
                                             <i class="fas fa-eye"></i>
-                                        </button>
+                                        </a>
                                         <button onclick="editProduct('{{ $product->id }}')" class="text-indigo-600 hover:text-indigo-800" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </button>
@@ -133,7 +133,6 @@
 
     <!-- Modals -->
     @include('Products.modals.create')
-    @include('Products.modals.show')
     @include('Products.modals.edit')
 
     <!-- JavaScript -->

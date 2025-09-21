@@ -25,6 +25,13 @@ $sizeClasses = [
         <div class="mt-4">
             {{ $slot }}
         </div>
+        
+        <!-- Modal Footer -->
+        @if(isset($footer))
+        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 mt-6">
+            {{ $footer }}
+        </div>
+        @endif
     </div>
 </div>
 

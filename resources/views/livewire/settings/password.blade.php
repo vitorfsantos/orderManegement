@@ -19,11 +19,6 @@
                         <i class="fas fa-lock w-5 h-5 mr-3"></i>
                         <span class="font-medium">Senha</span>
                     </a>
-                    <a href="{{ route('settings.appearance') }}" 
-                       class="flex items-center px-4 py-3 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                        <i class="fas fa-palette w-5 h-5 mr-3"></i>
-                        <span class="font-medium">Aparência</span>
-                    </a>
                 </nav>
             </div>
 

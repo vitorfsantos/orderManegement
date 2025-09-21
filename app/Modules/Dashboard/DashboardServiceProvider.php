@@ -17,3 +17,4 @@ class DashboardServiceProvider extends ServiceProvider
     //
   }
 }
+

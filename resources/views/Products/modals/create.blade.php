@@ -29,14 +29,13 @@
                         <span class="text-gray-500 sm:text-sm">R$</span>
                     </div>
                     <input 
-                        type="number" 
+                        type="text" 
                         id="create_price" 
                         name="price" 
-                        step="0.01"
-                        min="0.01"
                         required
                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
+                        oninput="formatPriceInput(this)"
                     >
                 </div>
                 <div id="create_price_error" class="mt-1 text-sm text-red-600 hidden"></div>
@@ -93,6 +92,10 @@
 <script>
 function submitCreateProduct() {
     const form = document.getElementById('create-product-form');
+    
+    // Prepare form data (format price for submission)
+    prepareFormData(form);
+    
     const formData = new FormData(form);
     
     // Clear previous errors

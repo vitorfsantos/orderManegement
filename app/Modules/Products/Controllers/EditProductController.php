@@ -18,7 +18,7 @@ class EditProductController extends Controller
 
   public function show(Product $product): View|JsonResponse
   {
-    if (request()->expectsJson()) {
+    if (request()->expectsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
       $html = view('Products.partials.product-details', compact('product'))->render();
       return response()->json([
         'success' => true,
@@ -31,7 +31,7 @@ class EditProductController extends Controller
 
   public function edit(Product $product): View|JsonResponse
   {
-    if (request()->expectsJson()) {
+    if (request()->expectsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
       return response()->json([
         'success' => true,
         'product' => [

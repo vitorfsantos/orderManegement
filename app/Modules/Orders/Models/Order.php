@@ -3,12 +3,15 @@
 namespace App\Modules\Orders\Models;
 
 use App\Models\BaseModel;
+use App\Modules\Orders\Factories\OrderFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Order extends BaseModel
 {
+  use HasFactory;
   protected $fillable = [
     'code',
     'user_id',
@@ -37,5 +40,13 @@ class Order extends BaseModel
   public function orderItems(): HasMany
   {
     return $this->hasMany(OrderItem::class);
+  }
+
+  /**
+   * Create a new factory instance for the model.
+   */
+  protected static function newFactory()
+  {
+    return OrderFactory::new();
   }
 }

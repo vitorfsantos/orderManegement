@@ -16,7 +16,9 @@ class ProcessLoginService
     if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
       request()->session()->regenerate();
 
-      return redirect()->intended(route('products.index'));
+      // Redirect based on user role
+      $redirectRoute = Auth::user()->isAdmin() ? 'dashboard' : 'orders.index';
+      return redirect()->intended(route($redirectRoute));
     }
 
     return back()->withErrors([

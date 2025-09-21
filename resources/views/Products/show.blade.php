@@ -20,43 +20,34 @@
             </nav>
 
             <!-- Product Details -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Product Image -->
-                <div>
-                    <div class="bg-gradient-to-br from-gray-100 to-gray-200 h-96 rounded-xl flex items-center justify-center">
-                        <div class="text-center">
-                            <i class="fas fa-image text-6xl text-gray-400 mb-4"></i>
-                            <p class="text-gray-500">Imagem do Produto</p>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="max-w-5xl mx-auto">
                 <!-- Product Info -->
-                <div class="space-y-6">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $product->name }}</h1>
-                        <div class="flex items-center space-x-4 mb-4">
-                            <span class="px-3 py-1 text-sm rounded-full {{ $product->active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $product->active ? 'Ativo' : 'Inativo' }}
+                <div class="space-y-8">
+                    <div class="text-center">
+                        <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ $product->name }}</h1>
+                        <div class="flex items-center justify-center space-x-6 mb-6">
+                            <span class="px-4 py-2 text-sm font-medium rounded-full {{ $product->active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                <i class="fas fa-circle mr-2 text-xs"></i>
+                                {{ $product->active ? 'Disponível' : 'Indisponível' }}
                             </span>
-                            <span class="text-sm text-gray-500">
-                                <i class="fas fa-box mr-1"></i>
-                                Estoque: {{ $product->stock }}
+                            <span class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-full">
+                                <i class="fas fa-box mr-2"></i>
+                                {{ $product->stock }} unidades em estoque
                             </span>
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <p class="text-4xl font-bold text-indigo-600 mb-2">
+                    <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl p-8 text-center border border-indigo-100">
+                        <p class="text-5xl font-bold text-indigo-600 mb-3">
                             R$ {{ number_format($product->price, 2, ',', '.') }}
                         </p>
-                        <p class="text-sm text-gray-600">Preço unitário</p>
+                        <p class="text-lg text-gray-600 font-medium">Preço unitário</p>
                     </div>
 
                     @if($product->active && $product->stock > 0)
-                        <div class="space-y-4">
+                        <div class="space-y-6">
                             <div>
-                                <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="quantity" class="block text-lg font-semibold text-gray-700 mb-3">
                                     Quantidade:
                                 </label>
                                 <input 
@@ -65,29 +56,23 @@
                                     min="1" 
                                     max="{{ $product->stock }}"
                                     value="1"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center font-semibold"
                                 >
                             </div>
                             
-                            <div class="flex space-x-3">
-                                <button 
-                                    id="add-to-cart"
-                                    data-product-id="{{ $product->id }}"
-                                    class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center"
-                                >
-                                    <i class="fas fa-shopping-cart mr-2"></i>
-                                    Adicionar ao Carrinho
-                                </button>
-                                
-                                <button class="bg-gray-100 text-gray-600 px-4 py-3 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                                    <i class="fas fa-heart"></i>
-                                </button>
-                            </div>
+                            <button 
+                                id="add-to-cart"
+                                data-product-id="{{ $product->id }}"
+                                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                            >
+                                <i class="fas fa-shopping-cart mr-3"></i>
+                                Adicionar ao Carrinho
+                            </button>
                         </div>
                     @else
-                        <div class="bg-gray-100 p-6 rounded-lg text-center">
-                            <i class="fas fa-exclamation-triangle text-3xl text-gray-400 mb-3"></i>
-                            <p class="text-gray-600 font-medium">
+                        <div class="bg-gradient-to-r from-red-50 to-orange-50 p-8 rounded-2xl text-center border border-red-100">
+                            <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+                            <p class="text-xl text-gray-700 font-semibold">
                                 @if(!$product->active)
                                     Produto indisponível
                                 @else
@@ -97,28 +82,15 @@
                         </div>
                     @endif
 
-                    <!-- Product Actions -->
-                    <div class="pt-6 border-t border-gray-200">
-                        <div class="flex space-x-3">
-                            <button class="flex-1 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center">
-                                <i class="fas fa-edit mr-2"></i>
-                                Editar
-                            </button>
-                            <button class="flex-1 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center">
-                                <i class="fas fa-copy mr-2"></i>
-                                Duplicar
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
             <!-- Product Description -->
             @if($product->description)
-                <div class="mt-8 pt-8 border-t border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Descrição</h2>
-                    <div class="prose max-w-none">
-                        <p class="text-gray-600 leading-relaxed">{{ $product->description }}</p>
+                <div class="mt-12 pt-8 border-t-2 border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Descrição do Produto</h2>
+                    <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                        <p class="text-lg text-gray-700 leading-relaxed text-center">{{ $product->description }}</p>
                     </div>
                 </div>
             @endif

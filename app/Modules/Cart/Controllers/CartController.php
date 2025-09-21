@@ -32,13 +32,18 @@ class CartController extends Controller
     return $this->listCartService->execute();
   }
 
-  public function remove(RemoveFromCartRequest $request): RedirectResponse
+  public function remove(RemoveFromCartRequest $request): RedirectResponse|JsonResponse
   {
-    return $this->removeFromCartService->removeFromCart($request->validated()['produto_id']);
+    return $this->removeFromCartService->removeFromCart($request->validated()['produto_id'], $request);
   }
 
   public function getCartCount(): JsonResponse
   {
     return $this->getCartCountService->execute();
+  }
+
+  public function getCartPreview(): JsonResponse
+  {
+    return $this->listCartService->getCartPreview();
   }
 }

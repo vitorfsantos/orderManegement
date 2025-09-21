@@ -3,11 +3,14 @@
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-  if (auth()->check()) {
-    return redirect()->route('dashboard');
+  if (Auth::check()) {
+    // Redirect based on user role
+    $redirectRoute = Auth::user()->isAdmin() ? 'dashboard' : 'orders.index';
+    return redirect()->route($redirectRoute);
   }
   return redirect()->route('login');
 })->name('home');

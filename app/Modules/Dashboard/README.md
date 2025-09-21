@@ -56,3 +56,4 @@ Os componentes estão localizados em `resources/views/Dashboard/components/`:
 ## Uso
 
 O dashboard é automaticamente carregado quando o usuário acessa `/dashboard` e está autenticado.
+

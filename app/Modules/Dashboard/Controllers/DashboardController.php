@@ -18,3 +18,4 @@ class DashboardController
     return view('Dashboard.index', compact('data'));
   }
 }
+

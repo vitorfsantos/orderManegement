@@ -31,14 +31,13 @@
                         <span class="text-gray-500 sm:text-sm">R$</span>
                     </div>
                     <input 
-                        type="number" 
+                        type="text" 
                         id="edit_price" 
                         name="price" 
-                        step="0.01"
-                        min="0.01"
                         required
                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
+                        oninput="formatPriceInput(this)"
                     >
                 </div>
                 <div id="edit_price_error" class="mt-1 text-sm text-red-600 hidden"></div>
@@ -115,69 +114,3 @@
     </x-slot>
 </x-modal>
 
-<script>
-function editProduct(productId) {
-    fetch(`/admin/products/${productId}/edit`, {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Populate form with product data
-            document.getElementById('edit_product_id').value = data.product.id;
-            document.getElementById('edit_name').value = data.product.name;
-            document.getElementById('edit_price').value = data.product.price;
-            document.getElementById('edit_stock').value = data.product.stock;
-            document.getElementById('edit_active').value = data.product.active ? '1' : '0';
-            document.getElementById('edit_slug').textContent = data.product.slug;
-            document.getElementById('edit_created_at').textContent = data.product.created_at;
-            document.getElementById('edit_updated_at').textContent = data.product.updated_at;
-            document.getElementById('edit_orders_count').textContent = data.product.orders_count || 0;
-            
-            openModal('edit-product-modal');
-        } else {
-            showError('Erro ao carregar dados do produto.');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showError('Erro ao carregar dados do produto.');
-    });
-}
-
-function submitEditProduct() {
-    const productId = document.getElementById('edit_product_id').value;
-    const form = document.getElementById('edit-product-form');
-    const formData = new FormData(form);
-    
-    // Clear previous errors
-    clearErrors('edit_');
-    
-    fetch(`/admin/products/${productId}`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-HTTP-Method-Override': 'PUT',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            closeModal('edit-product-modal');
-            showSuccess(data.message);
-            // Reload the page to show updated data
-            window.location.reload();
-        } else {
-            showErrors(data.errors, 'edit_');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showError('Erro ao atualizar produto. Tente novamente.');
-    });
-}
-</script>

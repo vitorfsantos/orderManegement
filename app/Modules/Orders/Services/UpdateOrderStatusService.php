@@ -3,12 +3,14 @@
 namespace App\Modules\Orders\Services;
 
 use App\Modules\Orders\Models\Order;
+use App\Modules\Orders\Mail\OrderConfirmationMail;
 use App\Modules\Products\Models\Product;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class UpdateOrderStatusService
 {
@@ -55,6 +57,17 @@ class UpdateOrderStatusService
 
       DB::commit();
 
+      // Enviar email de confirmação quando o pedido for confirmado (paid)
+      if ($status === 'paid') {
+        try {
+          Mail::to($order->user->email)->send(new OrderConfirmationMail($order));
+          Log::info("Order confirmation email sent for order #{$order->id} to {$order->user->email}");
+        } catch (\Exception $e) {
+          Log::error("Failed to send order confirmation email for order #{$order->id}: " . $e->getMessage());
+          // Não falha o processo se o email não for enviado
+        }
+      }
+
       $statusLabels = [
         'pending' => 'Pendente',
         'paid' => 'Pago',
@@ -65,6 +78,8 @@ class UpdateOrderStatusService
 
       if ($status === 'cancelled') {
         $message .= " As quantidades dos produtos foram devolvidas ao estoque.";
+      } elseif ($status === 'paid') {
+        $message .= " Email de confirmação foi enviado para o cliente.";
       }
 
       return redirect()->back()->with('success', $message);

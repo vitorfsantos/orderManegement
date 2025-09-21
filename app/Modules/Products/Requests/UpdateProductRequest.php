@@ -13,6 +13,15 @@ class UpdateProductRequest extends FormRequest
     return Auth::check() && Auth::user()->isAdmin();
   }
 
+  protected function prepareForValidation(): void
+  {
+    if ($this->has('price')) {
+      // Convert formatted price (e.g., "18,99") to numeric value
+      $price = str_replace(',', '.', $this->input('price'));
+      $this->merge(['price' => $price]);
+    }
+  }
+
   public function rules(): array
   {
     return [

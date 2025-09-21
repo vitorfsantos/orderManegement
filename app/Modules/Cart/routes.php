@@ -9,4 +9,5 @@ Route::middleware(['auth'])->group(function () {
   Route::get('/carrinho', [CartController::class, 'index'])->name('cart.index');
   Route::post('/carrinho/remove', [CartController::class, 'remove'])->name('cart.remove');
   Route::get('/carrinho/count', [CartController::class, 'getCartCount'])->name('cart.count');
+  Route::get('/carrinho/preview', [CartController::class, 'getCartPreview'])->name('cart.preview');
 });
